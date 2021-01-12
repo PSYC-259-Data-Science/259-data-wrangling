@@ -79,7 +79,7 @@ ds %>% filter(class %in% c("held","supine"))
 ds_mismatch <- ds %>% filter(match == 0) %>% select(time:class_prop_rel)
 #ds <- ds %>% filter(class_prop == 1) #Overwrites original dataset
 
-##### MUTATE --------- 
+##### MUTATE, RENAME--------- 
 
 #We did this already in base R
 ds$match <- ds$class == ds$class_rel
@@ -92,10 +92,15 @@ ds <- ds %>% mutate(
  )
 
 #You can also use helper functions to make multiple transformations at once
+#We'll spend more time with across when we get to summarize
 ds_mismatch <- ds_mismatch %>% 
   mutate(across(contains("prop"), floor))
 
 ds_mismatch <- ds_mismatch %>% 
   mutate(across(where(is.numeric), as.character))
 glimpse(ds_mismatch)
+
+#Rename columns 
+ds_mismatch <- ds_mismatch %>% 
+  rename(class_bin = class_prop, class_bin_rel = class_prop_rel)
          
