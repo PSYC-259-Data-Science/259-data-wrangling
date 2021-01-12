@@ -9,6 +9,8 @@ ds <- read_csv(here("data_raw","training_data.csv"), n_max = 2000)
 
 glimpse(ds)
 
+##### FACTORS --------- 
+
 #class and class_rel are both categories that were coded as numbers
 #let's turn this into a factor
 
@@ -39,6 +41,8 @@ ds$class_rel <- fct_collapse(ds$class_rel,
                          held = c("held_walk","held_stat"),
                          sit = c("sit_surf", "sit_cg", "sit_rest"))
 
+##### ARRANGE, FILTER, SELECT --------- 
+
 #Let's sort our dataset by class (and then class_rel)
 ds <- ds %>% arrange(class, class_rel)
 
@@ -66,5 +70,32 @@ ds %>% filter(match == 0) %>% select(c("time", "class", "class_rel"))
 ds %>% filter(match == 0) %>% select(time, starts_with("class"))
 
 #Other types of logic for filters
-ds %>% filter(class_prop < 1)
-ds
+ds %>% filter(class_prop < 1) %>% select(class_prop) %>% arrange(class_prop)
+ds %>% filter(class_prop > .5 & class_prop < .6) %>% select(class_prop) %>% arrange(class_prop)
+ds %>% filter(class == "held" | class == "supine")
+ds %>% filter(class %in% c("held","supine"))
+
+#filter, select, etc. all return tibbles, but aren't saved by default. 
+ds_mismatch <- ds %>% filter(match == 0) %>% select(time:class_prop_rel)
+#ds <- ds %>% filter(class_prop == 1) #Overwrites original dataset
+
+##### MUTATE --------- 
+
+#We did this already in base R
+ds$match <- ds$class == ds$class_rel
+ds <- ds %>% mutate(match = class == class_rel) #have to pipe ds in but also save the result back
+
+#Why bother with that clunky mutate syntax? You can mutate multiple variables at once
+ds <- ds %>% mutate(
+  class_greater_50 = as.numeric(class_prop > 50),
+  class_rel_greater_50 = as.numeric(class_prop_rel > 50),
+ )
+
+#You can also use helper functions to make multiple transformations at once
+ds_mismatch <- ds_mismatch %>% 
+  mutate(across(contains("prop"), floor))
+
+ds_mismatch <- ds_mismatch %>% 
+  mutate(across(where(is.numeric), as.character))
+glimpse(ds_mismatch)
+         
