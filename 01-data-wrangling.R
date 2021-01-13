@@ -4,10 +4,10 @@ library(here)
 
 rm(list = ls()) #Clean out workspace
 
-#datafile is ~13k lines long so let's just read in 1k
-ds <- read_csv(here("data_raw","training_data.csv"), n_max = 2000)
+#datafile is ~13k lines long so let's just read in 2k
+ds <- read_csv(here("data_example_1","training_data.csv"), n_max = 2000)
 
-glimpse(ds)
+print(ds, n_extra = F)
 
 ##### FACTORS --------- 
 
@@ -53,7 +53,7 @@ ds <- ds %>% arrange(time)
 ds$match <- ds$class == ds$class_rel #logic of ==, what's the type of our new var?
 class(ds$match)
 
-#Maybe a numeric variable would be better
+#Maybe a numeric variable would be better?
 ds$match <- ifelse(ds$class == ds$class_rel, 1, 0)
 class(ds$match)
 mean(ds$match)
@@ -61,7 +61,7 @@ mean(ds$match)
 #Let's filter to just look at the mismatches
 ds %>% filter(match == 0) #Note that ds hasn't changed, we didn't save anything
 
-#Do we really need 306 variables right now? 
+#Do we really need 306 variables right now? Let's select a subset of columns
 ds %>% filter(match == 0) %>% select(time:class_prop_rel)
 
 #Other select variants
@@ -77,30 +77,35 @@ ds %>% filter(class %in% c("held","supine"))
 
 #filter, select, etc. all return tibbles, but aren't saved by default. 
 ds_mismatch <- ds %>% filter(match == 0) %>% select(time:class_prop_rel)
-#ds <- ds %>% filter(class_prop == 1) #Overwrites original dataset
 
 ##### MUTATE, RENAME--------- 
 
 #We did this already in base R
 ds$match <- ds$class == ds$class_rel
-ds <- ds %>% mutate(match = class == class_rel) #have to pipe ds in but also save the result back
+#Mutate is the tidyverse way of creating/editing columns
+ds <- ds %>% mutate(match = class == class_rel) 
 
-#Why bother with that clunky mutate syntax? You can mutate multiple variables at once
+#Unlike in base R, you can mutate multiple variables at once
 ds <- ds %>% mutate(
   class_greater_50 = as.numeric(class_prop > 50),
   class_rel_greater_50 = as.numeric(class_prop_rel > 50),
  )
 
-#You can also use helper functions to make multiple transformations at once
-#We'll spend more time with across when we get to summarize
-ds_mismatch <- ds_mismatch %>% 
-  mutate(across(contains("prop"), floor))
+#More powerful mutate options
+ds_means <- ds %>% select(class, class_rel, mean_x1:mean_z3)
+print(ds_means)
 
-ds_mismatch <- ds_mismatch %>% 
-  mutate(across(where(is.numeric), as.character))
-glimpse(ds_mismatch)
+ds_means %>% mutate(across(c("mean_x1","mean_y1", "mean_z1"), abs))
+ds_means %>% mutate(across(where(is.numeric), abs))
+ds_means %>% mutate(across(ends_with("3"), abs))
+ds_means %>% mutate(across(where(is.factor), as.character))
 
 #Rename columns 
-ds_mismatch <- ds_mismatch %>% 
-  rename(class_bin = class_prop, class_bin_rel = class_prop_rel)
-         
+ds_means <- ds_means %>% 
+  rename(mean_X1 = mean_x1, mean_Y1 = mean_y1, mean_Z1 = mean_z1)
+print(ds_means)         
+
+#More powerful rename options
+ds_means <- ds_means %>% rename_all(toupper)
+ds_means <- ds_means %>% rename_with(tolower, ends_with("3"))
+
