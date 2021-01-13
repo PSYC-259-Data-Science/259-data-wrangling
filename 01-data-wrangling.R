@@ -138,8 +138,11 @@ ds_corr %>%
   group_by(class, half) %>% 
   summarise(across(corr_xy:corr_yz, mean))
 
-ds_corr %>% 
+se <- function(x) sd(x)/sqrt(length(x))
+results <- ds_corr %>% 
   group_by(class, half) %>% 
-  summarise(across(starts_with("corr"), list(mean = mean, sd = sd)))
+  summarise(across(starts_with("corr"), list(mean = mean, sd = sd, se = se)))
 
+#Great thing about saving your results as tibbles -> easy to select/filter! 
+results %>% filter(class == "prone") %>% select(ends_with("mean"))
             
