@@ -1,5 +1,4 @@
 library(tidyverse) #dplyr, tidyr, ggplot2, readr
-library(stringr) #help us deal with some messy data
 library(here)
 
 rm(list = ls()) #Clean out workspace
