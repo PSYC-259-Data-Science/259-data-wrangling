@@ -109,3 +109,37 @@ print(ds_means)
 ds_means <- ds_means %>% rename_all(toupper)
 ds_means <- ds_means %>% rename_with(tolower, ends_with("3"))
 
+##### SUMMARIZE, GROUP -------- 
+
+#Let's get a clean ds_means back
+ds_corr <- ds %>% select(time, class, corr_xy, corr_xz, corr_yz)
+ds_corr$half  <-  ds$time > median(ds$time)
+ds_corr$half <- factor(ds_corr$half, levels = c(FALSE, TRUE), labels = c("1st", "2nd"))
+
+#Summarize to calculate stats across rows
+ds_corr %>% summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
+
+#Chain summarize with filter
+ds_corr %>% 
+  filter(class == "sit") %>% 
+  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
+
+#More often, pair summarize with group_by
+ds_corr %>% 
+  group_by(class) %>% 
+  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
+
+ds_corr %>% 
+  group_by(class, half) %>% 
+  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
+
+#Helper functions
+ds_corr %>% 
+  group_by(class, half) %>% 
+  summarise(across(corr_xy:corr_yz, mean))
+
+ds_corr %>% 
+  group_by(class, half) %>% 
+  summarise(across(starts_with("corr"), list(mean = mean, sd = sd)))
+
+            
