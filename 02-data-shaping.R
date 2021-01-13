@@ -13,5 +13,4 @@ header <- header %>%  pivot_wider(id_cols = file, names_from = field, values_fro
 
 ds_joined <- left_join(header, ds, by = "file")
 
-ds_joined <- ds_joined %>% separate(file, into = c("dir", "file"), sep = "/")
-ds_joined <- ds_joined %>% separate(file, into = c("file", "ext"), sep = ".")
+ds_joined <- ds_joined %>% separate(file, into = c(NA,NA, NA, "Participant_file","Block_file",NA))
