@@ -1,0 +1,28 @@
+Participant 6192
+Age 21
+Sex male
+Order 2
+FirstSpeed 4
+Block 1
+speed 4
+condition mid
+1	slo	slower	True
+2	slo	slower	True
+3	fas	faster	True
+4	slo	slower	True
+5	slo	slower	True
+6	slo	faster	False
+7	slo	faster	False
+8	slo	slower	True
+9	fas	faster	True
+10	fas	faster	True
+11	fas	faster	True
+12	fas	faster	True
+13	fas	faster	True
+14	slo	slower	True
+15	slo	slower	True
+16	fas	slower	False
+17	fas	faster	True
+18	fas	faster	True
+19	slo	slower	True
+20	fas	faster	True
