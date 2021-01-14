@@ -109,7 +109,8 @@ m3 <- pull(ds, match) #returns vector
 #Base R, select multiple columns
 ds[, c("match", "class")]
 ds[, time:class_rel] #no
-ds[, 1:4] #yes, but not very useful
+ds[, starts_with("class")] #no
+ds[, 1:4] #yes, but not very useful (what if your column order changes)
 
 #Tidy select
 ds %>% select(time:class_rel) #range of adjacent columns
@@ -117,6 +118,8 @@ ds %>% select(time, class, class_rel) #list of columns
 ds %>% select(c("time", "class", "class_rel")) #list of string column names
 ds %>% select(time, starts_with("class")) #starts_with, ends_with
 ds %>% select(contains("rel"))
+ds %>% select(-starts_with("class")) # - means "everything but"
+ds %>% select(where(is.factor))
 
 #filter, select, etc. all return tibbles, but aren't saved by default. 
 ds_mismatch <- ds %>% filter(match == 0) %>% select(time:class_prop_rel)
