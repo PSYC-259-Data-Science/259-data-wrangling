@@ -4,7 +4,7 @@ library(here)
 rm(list = ls()) #Clean out workspace
 
 #datafile is ~13k lines long so let's just read in 2k
-ds <- read_csv(here("data_example_1","training_data.csv"), n_max = 2000)
+ds <- read_csv(here("data_example_1_2","training_data.csv"), n_max = 2000)
 
 ##### FACTORS --------- 
 
@@ -58,7 +58,7 @@ ds %>% arrange(class, class_rel) #Sorted, but changes not saved
 
 #Let's sort our dataset by class (and then class_rel)
 ds <- ds %>% arrange(class, class_rel) #Did it stay that way? Yes
-ds %>% arrange(class, class_rel) -> ds2 #You can do this if it makes more sense to you
+ds %>% arrange(class, class_rel) -> ds #You can do this if it makes more sense to you
 
 #Makes more sense to stay sorted by time, so let's go back to that
 ds <- ds %>% arrange(time)
@@ -127,94 +127,5 @@ ds %>% select(where(is.factor))
 
 #Piping through filters/selections to narrow down our data set
 ds_mismatch <- ds %>% filter(match == 0) %>% select(time:class_prop_rel)
-
-##### MUTATE, RENAME--------- 
-
-#Let's start with a slightly narrower dataset
-ds_means <- ds %>% select(class:class_prop_rel, mean_x1:mean_z3)
-print(ds_means)
-
-#We did this already in base R
-ds_means$match <- ds_means$class == ds_means$class_rel
-ds_means$match <- NULL #let's delete that column
-#Mutate is the tidyverse way of creating/editing columns
-ds_means <- ds_means %>% mutate(match = class == class_rel) 
-
-#Unlike in base R, you can mutate multiple variables at once
-ds_means <- ds_means %>% mutate(
-  class_greater_50 = as.numeric(class_prop > 50),
-  class_rel_greater_50 = as.numeric(class_prop_rel > 50),
-  class_less_50 = as.numeric(class_prop < 50),
-  class_rel_less_50 = as.numeric(class_prop_rel < 50),
- )
-
-#More powerful mutate options
-ds_means %>% mutate(across(c("mean_x1","mean_y1", "mean_z1"), abs))
-ds_means %>% mutate(across(where(is.numeric), abs))
-ds_means %>% mutate(across(ends_with("3"), abs))
-ds_means %>% mutate(across(where(is.factor), as.character))
-ds_means %>% mutate(across(everything(), as.character))
-
-#Rename columns 
-ds_means %>% rename(M_X1 = mean_x1, M_Y1 = mean_y1, M_Z1 = mean_z1)
-
-#More powerful rename options
-ds_means %>% rename_all(toupper)
-ds_means %>% rename_with(toupper, ends_with("3"))
-
-##### SUMMARIZE, GROUP -------- 
-
-#Let's get a clean ds to work withm this time with a few correlations
-ds_corr <- ds %>% select(time, class, corr_xy, corr_xz, corr_yz)
-#Make a factor (1st half, time is < median, 2nd half, time is > median)
-ds_corr$half  <-  ds$time > median(ds$time)
-ds_corr$half <- factor(ds_corr$half, levels = c(FALSE, TRUE), labels = c("1st", "2nd"))
-
-#Summarize to calculate stats across rows (collapses to a single value)
-ds_corr %>% summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
-
-#Chain summarize with filter
-ds_corr %>% 
-  filter(class == "sit") %>% 
-  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
-
-#More often, pair summarize with group_by
-ds_corr %>% 
-  group_by(class) %>% 
-  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
-#group_by means, within each group, summarize
-#treat each group separately when calculating
-
-#Group by as many variable (combinations) as you want
-ds_corr %>% 
-  group_by(class, half) %>% 
-  summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
-
-#Across again to save us from typing
-ds_corr %>% 
-  group_by(class, half) %>% 
-  summarise(across(corr_xy:corr_yz, mean))
-#across(selected vars, function)
-
-#I'm so sick of typing out the formula for SE, so let's make it a function
-#MUCH more of this in a few weeks
-se <- function(x) sd(x)/sqrt(length(x))
-
-#Now we can use across with a list of functions for even more automation
-results <- ds_corr %>% 
-  group_by(class, half) %>% 
-  summarise(across(starts_with("corr"), list(mean = mean, sd = sd, se = se))) %>% 
-  ungroup()
-
-#Great thing about saving your results as tibbles -> easy to select/filter! 
-results %>% filter(class == "prone") %>% select(ends_with("se"))
-
-#Results in a table are easy to clean up 
-#At least let R do the rounding for you if you're going to copy/paste
-results %>% 
-  select(class:corr_xy_se) %>% 
-  rename(Class = class, Period = half, 
-         M = corr_xy_mean, SD = corr_xy_sd, SE = corr_xy_se) %>% 
-        knitr::kable(digits = 2)
 
           
