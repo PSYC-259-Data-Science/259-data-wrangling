@@ -70,13 +70,19 @@ print(ds_corr)
 temp_var <-  ds$time > median(ds$time)
 temp_var <- factor(temp_var, levels = c(FALSE, TRUE), labels = c("1st", "2nd"))
 
-#add_column instead of mutate if you want to decide where it goes
-ds_corr <- ds_corr %>% add_column(half = temp_var, .before = "class") 
+#Use .before/.afer with mutate if you want to decide where it goes in your tibble
+ds_corr <- ds_corr %>% mutate(half = temp_var, .before = "class") 
 print(ds_corr)
 
 #Summarize to calculate stats across rows (collapses to a single value)
 ds_corr %>% summarise(xy_mean = mean(corr_xy))
-ds_corr %>% summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
+#Like mutate, summarize can make as many summary stats as you want
+ds_corr %>% summarise(
+  xy_mean = mean(corr_xy), 
+  xy_sum = sum(corr_xy),
+  xy_sd = sd(corr_xy), 
+  xy_n = n(), 
+  xy_se = xy_sd/sqrt(xy_n)) #can use earlier calculated vars later in your computation
 
 #Chain summarize with filter
 ds_corr %>% 
