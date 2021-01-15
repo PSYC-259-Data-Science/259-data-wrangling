@@ -107,7 +107,7 @@ ds_corr %>%
   summarise(across(corr_xy:corr_yz, mean))
 #across(selected vars, function)
 
-#I'm so sick of typing out the formula for SE, so let's make it a function
+#I'm sick of typing out the formula for SE, so let's make it a function
 #Much more of this in a few weeks
 se <- function(x) sd(x)/sqrt(length(x))
 
