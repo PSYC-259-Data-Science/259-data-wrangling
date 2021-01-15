@@ -208,4 +208,13 @@ results <- ds_corr %>%
 
 #Great thing about saving your results as tibbles -> easy to select/filter! 
 results %>% filter(class == "prone") %>% select(ends_with("se"))
-papaja::apa_table(results)
+
+#Results in a table are easy to clean up 
+#At least let R do the rounding for you if you're going to copy/paste
+results %>% 
+  select(class:corr_xy_se) %>% 
+  rename(Class = class, Period = half, 
+         M = corr_xy_mean, SD = corr_xy_sd, SE = corr_xy_se) %>% 
+        knitr::kable(digits = 2)
+
+          

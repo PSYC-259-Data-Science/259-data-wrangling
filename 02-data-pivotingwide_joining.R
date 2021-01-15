@@ -2,6 +2,9 @@
 library(tidyverse)
 library(vroom)
 library(here)
+library(janitor)
+
+rm(list = ls()) #Clean out workspace
 
 col_names = c("trial_num","speed_actual","speed_response","correct")
 file_names <- list.files("data_example_2", full.names = T)
@@ -12,7 +15,7 @@ header <- header %>%  pivot_wider(id_cols = file, names_from = field, values_fro
 
 ds_joined <- left_join(header, ds, by = "file")
 
-ds_joined <- ds_joined %>% separate(file, into = c(NA,NA, NA, "Participant_file","Block_file",NA))
+ds_joined <- ds_joined %>% separate(file, into = c(NA,NA, NA, "Participant_file","Block_file", NA))
 ds_joined <- ds_joined %>% rename_with(make_clean_names)
 
 speed_labels = c("slower", "faster")
@@ -21,6 +24,9 @@ ds_joined <- ds_joined %>%
     speed_actual = factor(speed_actual, levels = c("slo","fas"), labels = speed_labels),
     speed_response = factor(speed_response, levels = c("slower","faster"), labels = speed_labels),
   )
+
+
+####  SOME THINGS FOR LATER -------------------
 
 checks <- ds_joined %>% 
   group_by(participant, block) %>% 
