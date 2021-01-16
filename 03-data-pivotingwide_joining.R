@@ -7,7 +7,7 @@ library(janitor)
 rm(list = ls()) #Clean out workspace
 
 #Get all files in the data_example 3 directory
-file_names <- list.files("data_example_3", full.names = T)
+file_names <- list.files("data_example_3", pattern = ".txt",full.names = T)
 
 #Use vroom to read the data (skipping 8 lines of header)
 ds <- vroom(file_names, id = "file", skip = 8, col_names = c("trial_num","speed_actual","speed_response","correct"))
@@ -57,6 +57,6 @@ ds_joined <- ds_joined %>%
     speed_response = factor(speed_response, levels = c("slower","faster"), labels = speed_labels),
   )
 
-ds_joined %>% write_csv(here("data_example_3","joined_data.csv"))
-#Why both converting to factors and then writing to text? 
+ds_joined %>% select(-(participant_file:block_file)) %>% write_csv(here("data_cleaned","joined_data.csv"))
+#Why bother converting to factors and then writing to text? 
 #Factors get written as their labels, so next time we import this it will read in more cleanly
