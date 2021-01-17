@@ -47,6 +47,8 @@ ds_means <- ds_means %>% mutate(
 print(ds_means)
 
 #More powerful mutate options
+#Across saves us from repetitive typing
+#across(selected vars, function) means "apply this function to the selected variables"
 ds_means %>% mutate(across(c("mean_x1","mean_y1", "mean_z1"), abs))
 ds_means %>% mutate(across(where(is.numeric), abs))
 ds_means %>% mutate(across(ends_with("3"), abs))
@@ -102,10 +104,10 @@ ds_corr %>%
   summarise(xy_mean = mean(corr_xy), xy_sd = sd(corr_xy), xy_n = n(), xy_se = xy_sd/sqrt(xy_n))
 
 #Across saves us from repetitive typing
+#across(selected vars, function)
 ds_corr %>% 
   group_by(class, half) %>% 
   summarise(across(corr_xy:corr_yz, mean))
-#across(selected vars, function)
 
 #I'm sick of typing out the formula for SE, so let's make it a function
 #Much more of this in a few weeks
