@@ -122,5 +122,18 @@ print(results)
 #Great thing about saving your results as tibbles -> easy to select/filter! 
 results %>% filter(half == "1st") %>% select(ends_with("mean"))
 
+#Note that if you don't use a "named" list (mean = mean), the output isn't as nice
+results <- ds_corr %>% 
+  group_by(class, half) %>% 
+  summarise(across(starts_with("corr"), list(mean, sd, se)))
+print(results)
+
+#This has to do with R's "list" type
+fs_named_list <- list(mean = mean, sd = sd, se = se) #Named elements
+fs_list <- list(mean, sd, se) #Numbered elements are more like vectors
+fs_vector <- c("mean", "sd", "se")
+
+
+
 
           

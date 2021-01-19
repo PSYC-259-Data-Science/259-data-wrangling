@@ -83,6 +83,9 @@ ds$match <- ifelse(ds$class == ds$class_rel, 1, 0)
 class(ds$match)
 ?ifelse #just like excel's if
 
+#Handy for changing a subset of a variable based on a condition
+ds$class_prop <- ifelse(ds$class_prop == 1, NA, ds$class_prop)
+
 #### Filter = choosing rows ----
 
 #Base R 
