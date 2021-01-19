@@ -1,5 +1,7 @@
 library(tidyverse) #dplyr, tidyr, ggplot2, readr
 library(here)
+library(janitor)
+
 
 rm(list = ls()) #Clean out workspace
 
@@ -25,9 +27,9 @@ ds$class_rel <- fct_collapse(ds$class_rel,
                          held = c("held_walk","held_stat"),
                          sit = c("sit_surf", "sit_cg", "sit_rest"))
 
-##### MUTATE, RENAME--------- 
+##### MUTATE --------- 
 
-#Let's start with a slightly narrower dataset
+#Let's start with a narrower dataset
 ds_means <- ds %>% select(class:class_prop_rel, mean_x1:mean_z3)
 print(ds_means)
 
@@ -39,12 +41,18 @@ ds_means <- ds_means %>% mutate(match = class == class_rel)
 
 #Unlike in base R, you can mutate multiple variables at once
 ds_means <- ds_means %>% mutate(
-  class_greater_50 = as.numeric(class_prop > 50),
-  class_rel_greater_50 = as.numeric(class_prop_rel > 50),
-  class_less_50 = as.numeric(class_prop < 50),
-  class_rel_less_50 = as.numeric(class_prop_rel < 50),
+  class_greater_50 = as.numeric(class_prop > .5),
+  class_rel_greater_50 = as.numeric(class_prop_rel > .5),
+  class_less_50 = as.numeric(class_prop < .5),
+  class_rel_less_50 = as.numeric(class_prop_rel < .5)
  )
-print(ds_means)
+
+#You can also mutate the same variable multiple times
+ds_means <- ds_means %>% mutate(
+  class_both_greater_50 = as.numeric(class_greater_50 + class_rel_greater_50),
+  class_both_greater_50 = class_both_greater_50 == 2,
+  class_both_greater_50 = factor(class_both_greater_50, levels = c(TRUE, FALSE), labels = c("greater","less than"))
+)
 
 #More powerful mutate options
 #Across saves us from repetitive typing
@@ -55,12 +63,35 @@ ds_means %>% mutate(across(ends_with("3"), abs))
 ds_means %>% mutate(across(where(is.factor), as.character))
 ds_means %>% mutate(across(everything(), as.character))
 
-#Rename columns 
+##### RENAME ------- 
+
+#Rename uses the format rename(new_name = old_name) without quotes
 ds_means %>% rename(M_X1 = mean_x1, M_Y1 = mean_y1, M_Z1 = mean_z1)
 
 #More powerful rename options
 ds_means %>% rename_all(toupper)
 ds_means %>% rename_with(toupper, ends_with("3"))
+
+#Why bother renaming? Let's take a look at some messy columns
+ds_medians <- ds %>% select(contains("median"))
+
+ds$2x_median #nope!
+ds$`2x_median` #works, but who wants to do this?
+
+#Use rename_with to batch rename columns from a list
+
+#Let's pull all of the names we want to fix
+old_names <- ds_medians %>% select(`1x_median`:`3z_median`) %>% names()
+#Next, construct a list of new names to replace them with
+new_names <- paste0("median_", str_sub(old_names,1,2))
+#OR, new_names <- c("median_x1", "median_y1", etc.)
+
+#Use rename_with to rename one list of old names with a list of new names
+ds_medians <- ds_medians %>% rename_with(~ new_names, old_names)
+
+#make_clean_names from the 'janitor' package can automatically make everything snake_case
+iris
+iris %>% rename_with(make_clean_names) 
 
 ##### SUMMARIZE, GROUP -------- 
 
@@ -72,12 +103,18 @@ print(ds_corr)
 temp_var <-  ds$time > median(ds$time)
 temp_var <- factor(temp_var, levels = c(FALSE, TRUE), labels = c("1st", "2nd"))
 
-#Use .before/.afer with mutate if you want to decide where it goes in your tibble
+#Use .before/.after with mutate if you want to decide where it goes in your tibble
 ds_corr <- ds_corr %>% mutate(half = temp_var, .before = "class") 
 print(ds_corr)
 
 #Summarize to calculate stats across rows (collapses to a single value)
 ds_corr %>% summarise(xy_mean = mean(corr_xy))
+
+#If any item in a column is NA, your summary stats will be NA unless you set na.rm = TRUE
+ds_corr_withNA <- ds_corr %>% mutate(corr_xy = ifelse(corr_xy < 0, NA, corr_xy))
+ds_corr_withNA %>% summarise(xy_mean = mean(corr_xy))
+ds_corr_withNA %>% summarise(xy_mean = mean(corr_xy, na.rm = T))
+
 #Like mutate, summarize can make as many summary stats as you want
 ds_corr %>% summarise(
   xy_mean = mean(corr_xy), 

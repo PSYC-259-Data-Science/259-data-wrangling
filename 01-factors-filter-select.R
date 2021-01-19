@@ -1,6 +1,7 @@
 library(tidyverse) #dplyr, tidyr, ggplot2, readr
 library(here)
 
+
 rm(list = ls()) #Clean out workspace
 
 #datafile is ~13k lines long so let's just read in 2k
