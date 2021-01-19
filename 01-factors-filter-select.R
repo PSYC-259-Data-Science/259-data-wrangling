@@ -75,9 +75,11 @@ class(ds$match) #What type is match?
 "sit" == "stand"
 
 #Works element-wise on vectors
-some_ints <- c(1:5, 5:1)
+some_ints <- c(1:5, 5:2, NA)
 class_num  == some_ints
 class_num  > some_ints
+is.na(some_ints)
+!is.na(some_ints)
 
 #Maybe a numeric variable would be better?
 ds$match <- ifelse(ds$class == ds$class_rel, 1, 0)
