@@ -2,10 +2,9 @@ library(tidyverse) #dplyr, tidyr, ggplot2, readr
 library(here)
 library(janitor)
 
-
 rm(list = ls()) #Clean out workspace
 
-#datafile is ~13k lines long so let's just read in 2k
+##### FILE SETUP FROM EXAMPLE 1 ------------
 ds <- read_csv(here("data_example_1_2","training_data.csv"), n_max = 2000)
 
 #store a vector of category numbers
@@ -36,6 +35,7 @@ print(ds_means)
 #Assigning a variable with base R
 ds_means$match <- ds_means$class == ds_means$class_rel
 ds_means$match <- NULL #let's delete that column
+
 #Mutate is the tidyverse way of creating/editing columns
 ds_means <- ds_means %>% mutate(match = class == class_rel) 
 
@@ -72,23 +72,8 @@ ds_means %>% rename(M_X1 = mean_x1, M_Y1 = mean_y1, M_Z1 = mean_z1)
 ds_means %>% rename_all(toupper)
 ds_means %>% rename_with(toupper, ends_with("3"))
 
-#Why bother renaming? Let's take a look at some messy columns
-ds_medians <- ds %>% select(contains("median"))
 
-ds$2x_median #nope!
-ds$`2x_median` #works, but who wants to do this?
-
-#Use rename_with to batch rename columns from a list
-
-#Let's pull all of the names we want to fix
-old_names <- ds_medians %>% select(`1x_median`:`3z_median`) %>% names()
-#Next, construct a list of new names to replace them with
-new_names <- paste0("median_", str_sub(old_names,1,2))
-#OR, new_names <- c("median_x1", "median_y1", etc.)
-
-#Use rename_with to rename one list of old names with a list of new names
-ds_medians <- ds_medians %>% rename_with(~ new_names, old_names)
-
+#I forgot to cover this, but I'm leaving the example here if you want to take a look 
 #make_clean_names from the 'janitor' package can automatically make everything snake_case
 iris
 iris %>% rename_with(make_clean_names) 
@@ -108,7 +93,7 @@ ds_corr <- ds_corr %>% mutate(half = temp_var, .before = "class")
 print(ds_corr)
 
 #Summarize to calculate stats across rows (collapses to a single value)
-ds_corr %>% summarise(xy_mean = mean(corr_xy))
+ds_corr %>% summarize(xy_mean = mean(corr_xy))
 
 #If any item in a column is NA, your summary stats will be NA unless you set na.rm = TRUE
 ds_corr_withNA <- ds_corr %>% mutate(corr_xy = ifelse(corr_xy < 0, NA, corr_xy))
@@ -145,6 +130,8 @@ ds_corr %>%
 ds_corr %>% 
   group_by(class, half) %>% 
   summarise(across(corr_xy:corr_yz, mean))
+
+### NOT COVERED
 
 #I'm sick of typing out the formula for SE, so let's make it a function
 #Much more of this in a few weeks

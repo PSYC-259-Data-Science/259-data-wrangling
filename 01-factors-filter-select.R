@@ -1,7 +1,6 @@
 library(tidyverse) #dplyr, tidyr, ggplot2, readr
 library(here)
 
-
 rm(list = ls()) #Clean out workspace
 
 #datafile is ~13k lines long so let's just read in 2k
@@ -18,11 +17,14 @@ class_num <- c(1,2,3,4,5,6,7,8,9,10) # class_num <- 1:10
 class_lab <- c("upright", "walking", "prone", "crawling","held_walk",
                "held_stat","sit_surf","sit_cg","sit_rest","supine")
 
-class(class_num)
-class(class_lab)
+typeof(class_num)
+typeof(class_lab)
 
 ds$class <- factor(ds$class, levels = class_num, labels = class_lab)
 ds$class_rel <- factor(ds$class_rel, levels = class_num, labels = class_lab)
+
+class(ds$class) #Class is factor
+typeof(ds$class) #Type is integer (factors are stored as integers)
 
 #Let's see how much of each category we have
 fct_count(ds$class)
@@ -66,24 +68,12 @@ ds <- ds %>% arrange(time)
 
 #Let's create a variable that checks whether class and class_rel match
 ds$match <- ds$class == ds$class_rel 
-class(ds$match) #What type is match?
+typeof(ds$match) #What type is match?
 
-#Applying logical operators
-1 == 1
-2 > 3
-"sit" == "sit"
-"sit" == "stand"
-
-#Works element-wise on vectors
-some_ints <- c(1:5, 5:2, NA)
-class_num  == some_ints
-class_num  > some_ints
-is.na(some_ints)
-!is.na(some_ints)
-
-#Maybe a numeric variable would be better?
-ds$match <- ifelse(ds$class == ds$class_rel, 1, 0)
-class(ds$match)
+#Using ifelse to achieve the same thing
+ds$match <- ifelse(ds$class == ds$class_rel, "Match", "Mismatch") #Output is a character
+ds$match <- ifelse(ds$class == ds$class_rel, 1, 0) #Output is a numeric
+typeof(ds$match)
 ?ifelse #just like excel's if
 
 #Handy for changing a subset of a variable based on a condition
@@ -103,7 +93,7 @@ ds %>% filter(class == "prone" | class == "supine") #Example of using "or" aka |
 ds %>% filter(class == "supine" & class_rel == "sit") #Example of using "and" aka &
 ds %>% filter(time > 319 & time < 322) #Example of using "and" with numeric ranges
 ds %>% filter(class == "prone") %>% filter(time > 319) %>% filter(match == 1) #endless chaining (same as &)
-ds %>% filter(class %in% c("held","supine")) #if class is in a list
+ds_held_supine <- ds %>% filter(class %in% c("held","supine")) #if class is in a list
 
 #### Select = choosing columns ---- 
 
@@ -116,13 +106,13 @@ m3 <- pull(ds, match) #returns a vector, not a tibble
 
 #Base R, select multiple columns, not very flexible
 ds[, c("match", "class")]
-ds[, time:class_rel] #no
-ds[, starts_with("class")] #no
-ds[, 1:4] #yes, but not very useful (what if your column order changes)
+ds[, time:class_rel] #can't do this
+ds[, starts_with("class")] #can't do this
+ds[, 1:4] #you can do this, but "hard coding" should be avoided (what if your column order changes)
 
 
 #Tidy select, endless options for how to identify columns
-ds %>% select(time, class, class_rel) #list of unquoted columns
+ds %>% select(match, class) #list of unquoted columns
 ds %>% select(c("time", "class", "class_rel")) #vector of string column names
 ds %>% select(time:class_rel) #range of adjacent columns (from time to class_rel)
 ds %>% select(time, starts_with("class")) #name matches pattern (also ends_with)
