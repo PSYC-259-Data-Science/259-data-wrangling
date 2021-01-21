@@ -17,8 +17,8 @@ class_num <- c(1,2,3,4,5,6,7,8,9,10) # class_num <- 1:10
 class_lab <- c("upright", "walking", "prone", "crawling","held_walk",
                "held_stat","sit_surf","sit_cg","sit_rest","supine")
 
-typeof(class_num)
-typeof(class_lab)
+typeof(class_num) #Checks the type (numeric)
+typeof(class_lab) #Checks the type (character)
 
 ds$class <- factor(ds$class, levels = class_num, labels = class_lab)
 ds$class_rel <- factor(ds$class_rel, levels = class_num, labels = class_lab)
