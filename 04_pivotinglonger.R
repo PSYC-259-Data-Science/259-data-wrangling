@@ -8,7 +8,7 @@ ds <- read_csv('data_example_4/vocab.csv')
 print(ds)
 
 #Perfect example of "columns as values"
-#Age should be a variable, words should variable
+#Age should be a variable, words should be a variable
 #Each age-word pair is an observation that should appear as a row
 
 #Wide to long with pivot_longer
@@ -36,13 +36,3 @@ ds <- ds %>% mutate(
 #id/dob get repeated to match the new length of the data set
 ds_long <- pivot_longer(ds, cols = -(id:dob), names_to = "age", values_to = "word", values_drop_na = T)
 ds_long$age <- as.numeric(ds_long$age)
-
-#Deal with annoying headers
-ds <- read_csv('data_example_4/vocab_annoying_headers.csv')
-ds <- ds %>% mutate(
-  id = "Jonah",
-  dob = as.Date("2017-08-30"),
-  .before = "age_12"
-)
-ds_long <- pivot_longer(ds, cols = -(id:dob), names_to = "age", values_to = "word", names_prefix = "age_",values_drop_na = T)
-

@@ -57,6 +57,3 @@ ds_joined <- ds_joined %>%
     speed_response = factor(speed_response, levels = c("slower","faster"), labels = speed_labels),
   )
 
-ds_joined %>% select(-(participant_file:block_file)) %>% write_csv(here("data_cleaned","joined_data.csv"))
-#Why bother converting to factors and then writing to text? 
-#Factors get written as their labels, so next time we import this it will read in more cleanly
